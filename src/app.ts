@@ -1,3 +1,61 @@
+// Validation
+// We may use '?' as 'minLength?: number;' or 'minLength: number | undefinded;' and the result will be same
+interface Validatable {
+    value: string | number;
+    required: boolean;
+    minLength?: number;
+    maxLength?: number;
+    min?: number;
+    max?: number;
+}
+
+function validate(validatableInput: Validatable) {
+    let isValid = true;
+
+    // Check required
+    if (validatableInput.required) {
+        isValid =
+            isValid && validatableInput.value.toString().trim().length !== 0;
+    }
+
+    // Check minLength
+    if (
+        validatableInput.minLength != null &&
+        typeof validatableInput.value === "string"
+    ) {
+        isValid =
+            isValid &&
+            validatableInput.value.length >= validatableInput.minLength;
+    }
+
+    // Check maxLength
+    if (
+        validatableInput.maxLength != null &&
+        typeof validatableInput.value === "string"
+    ) {
+        isValid =
+            isValid &&
+            validatableInput.value.length <= validatableInput.maxLength;
+    }
+
+    // Check min
+    if (
+        validatableInput.min != null &&
+        typeof validatableInput.value === "number"
+    ) {
+        isValid = isValid && validatableInput.value >= validatableInput.min;
+    }
+
+    // Check max
+    if (
+        validatableInput.max != null &&
+        typeof validatableInput.value === "number"
+    ) {
+        isValid = isValid && validatableInput.value <= validatableInput.max;
+    }
+    return isValid;
+}
+
 // Autobind decorator
 function autobind(
     // add underscore '_' that the front of the name tells TS that we know this specific argument is not being used
@@ -70,15 +128,34 @@ class ProjectInput {
         const enteredDescription = this.descriptionInputElement.value;
         const enteredPeople = this.peopleInputElement.value;
 
+        const titleValidatable: Validatable = {
+            value: enteredTitle,
+            required: true,
+        };
+        const descriptionValidatable: Validatable = {
+            value: enteredDescription,
+            required: true,
+            minLength: 5,
+        };
+        const peopleValidatable: Validatable = {
+            // adding '+' will convert the value to number
+            value: +enteredPeople,
+            required: true,
+            min: 1,
+            max: 5,
+        };
+
+        // Validating
         if (
-            enteredTitle.trim().length === 0 ||
-            enteredDescription.trim().length === 0 ||
-            enteredPeople.trim().length === 0
+            // If any of these show false, it's invalid and alert will show
+            !validate(titleValidatable) ||
+            !validate(descriptionValidatable) ||
+            !validate(peopleValidatable)
         ) {
             alert("Invalid input, please give it another try");
             return;
         } else {
-            // addind '+' will convert the value to number
+            // adding '+' will convert the value to number
             return [enteredTitle, enteredDescription, +enteredPeople];
         }
     }
