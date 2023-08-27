@@ -1,7 +1,8 @@
 // Autobind decorator
 function autobind(
-    target: any,
-    propertyKey: string,
+    // add underscore '_' that the front of the name tells TS that we know this specific argument is not being used
+    _target: any,
+    _propertyKey: string,
     descriptor: PropertyDescriptor
 ) {
     const originalMethod = descriptor.value;
@@ -62,10 +63,43 @@ class ProjectInput {
         this.attach();
     }
 
+    // Canceptually, this function is used to reach out all user inputs
+    // : [string, string, number] <-- this type called tuple. Tuple requires exact type
+    private getherUserInput(): [string, string, number] | void {
+        const enteredTitle = this.titleInputElement.value;
+        const enteredDescription = this.descriptionInputElement.value;
+        const enteredPeople = this.peopleInputElement.value;
+
+        if (
+            enteredTitle.trim().length === 0 ||
+            enteredDescription.trim().length === 0 ||
+            enteredPeople.trim().length === 0
+        ) {
+            alert("Invalid input, please give it another try");
+            return;
+        } else {
+            // addind '+' will convert the value to number
+            return [enteredTitle, enteredDescription, +enteredPeople];
+        }
+    }
+
+    private clearInput() {
+        this.titleInputElement.value = "";
+        this.descriptionInputElement.value = "";
+        this.peopleInputElement.value = "";
+    }
+
     @autobind
     private submitHandler(event: Event) {
         event.preventDefault();
-        console.log(this.titleInputElement.value);
+        const userInput = this.getherUserInput();
+        // Check if userInput is an array
+        if (Array.isArray(userInput)) {
+            const [title, desc, people] = userInput;
+            console.log(title, desc, people);
+            // clear input fields
+            this.clearInput();
+        }
     }
 
     // Binding
