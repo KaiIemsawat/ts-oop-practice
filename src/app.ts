@@ -74,7 +74,49 @@ function autobind(
     return adjDescriptor;
 }
 
-// ProjectInput class
+/* ===== ProjectList class ===== */
+class ProjectList {
+    // We need to tell TS the types we will be using
+    templateElement: HTMLTemplateElement;
+    hostElement: HTMLDivElement;
+    element: HTMLElement; // if there is no specific element type, we may use 'HTMLElement' which will work on any HTML element
+
+    constructor(private type: "active" | "finished") {
+        this.templateElement = document.getElementById(
+            "project-list"
+        )! as HTMLTemplateElement;
+        this.hostElement = document.getElementById("app")! as HTMLDivElement;
+
+        const importedNode = document.importNode(
+            this.templateElement.content,
+            true
+        );
+
+        // Assign a velue to 'this.element' refer to the first element that happen to be <section>. Thus, there is no option as HTMLSectionElement so we use 'HTMLElement'
+        this.element = importedNode.firstElementChild as HTMLElement;
+        // Assign id to HTML element. In this case, it will appear in empty <div>
+        this.element.id = `${this.type}-projects`;
+        this.attach();
+        this.renderContent(); // Call to render elements
+    }
+
+    // Render element according to the input value
+    private renderContent() {
+        // Create dynamic id for HTML element
+        const listId = `${this.type}-projects-list`;
+        // Search for the element that we need to work with. Then, assign the id
+        this.element.querySelector("ul")!.id = listId;
+        this.element.querySelector(
+            "h2"
+        )!.textContent = `${this.type.toUpperCase()} PROJECT`;
+    }
+
+    private attach() {
+        this.hostElement.insertAdjacentElement("beforeend", this.element); // beforeend <-- means before the closing tag
+    }
+}
+
+/* ===== ProjectInput class ===== */
 class ProjectInput {
     // We need to tell TS the types we will be using
     templateElement: HTMLTemplateElement;
@@ -85,14 +127,13 @@ class ProjectInput {
     peopleInputElement: HTMLInputElement;
 
     constructor() {
-        // Using '!' declare that we sure this element is not null
         // <HTMLTemplateElement> <-- type casting as the line below
         // this.templateElement = <HTMLTemplateElement>document.getElementById("project-input")!;
         // OR
         // Can also declare type casting using 'as as HTMLTemplateElement' as the line below. The results will be the same
         this.templateElement = document.getElementById(
             "project-input"
-        )! as HTMLTemplateElement;
+        )! as HTMLTemplateElement; // Using '!' declare that we sure this element is not null
         this.hostElement = document.getElementById("app")! as HTMLDivElement;
 
         const importedNode = document.importNode(
@@ -131,6 +172,7 @@ class ProjectInput {
         const titleValidatable: Validatable = {
             value: enteredTitle,
             required: true,
+            // minLength: 3,
         };
         const descriptionValidatable: Validatable = {
             value: enteredDescription,
@@ -192,3 +234,5 @@ class ProjectInput {
 }
 
 const projectInput = new ProjectInput();
+const activeProjectList = new ProjectList("active");
+const finishedProjectList = new ProjectList("finished");
