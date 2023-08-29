@@ -128,20 +128,24 @@ function autobind(
     return adjDescriptor;
 }
 
-/* ===== ProjectList class ===== */
-class ProjectList {
+/* ===== Component Base class ===== */
+abstract class Component<T extends HTMLElement, U extends HTMLElement> {
+    // Create generic types
     // We need to tell TS the types we will be using
     templateElement: HTMLTemplateElement;
-    hostElement: HTMLDivElement;
-    element: HTMLElement; // if there is no specific element type, we may use 'HTMLElement' which will work on any HTML element
-    assignedProjects: Project[];
+    hostElement: T;
+    element: U; // if there is no specific element type, we may use 'HTMLElement' which will work on any HTML element
 
-    constructor(private type: "active" | "finished") {
+    constructor(
+        templateId: string,
+        hostElementId: string,
+        insertAtStart: boolean,
+        newElementId?: string // Optional parameter should be at the last. Not mandatory but a good practice
+    ) {
         this.templateElement = document.getElementById(
-            "project-list"
+            templateId
         )! as HTMLTemplateElement;
-        this.hostElement = document.getElementById("app")! as HTMLDivElement;
-        this.assignedProjects = [];
+        this.hostElement = document.getElementById(hostElementId)! as T;
 
         const importedNode = document.importNode(
             this.templateElement.content,
@@ -149,10 +153,45 @@ class ProjectList {
         );
 
         // Assign a velue to 'this.element' refer to the first element that happen to be <section>. Thus, there is no option as HTMLSectionElement so we use 'HTMLElement'
-        this.element = importedNode.firstElementChild as HTMLElement;
-        // Assign id to HTML element. In this case, it will appear in empty <div>
-        this.element.id = `${this.type}-projects`;
+        this.element = importedNode.firstElementChild as U;
+        // Check is 'newElementId' is available
+        if (newElementId) {
+            // If so, assign id to HTML element. In this case, it will appear in empty <div>
+            this.element.id = newElementId;
+        }
 
+        this.attach(insertAtStart);
+    }
+    // call this.attach() to attach the element that we are working into the host element
+    private attach(insertAtBeginning: boolean) {
+        this.hostElement.insertAdjacentElement(
+            insertAtBeginning
+                ? "afterbegin" // afterbegin <-- means right after openning tag
+                : "beforeend", // beforeend <-- means before the closing tag
+            this.element
+        );
+    }
+
+    // Any class that inherit this class needs this two methods.
+    abstract configure(): void;
+    abstract renderContent(): void;
+}
+
+/* ===== ProjectList class ===== */
+class ProjectList extends Component<HTMLDivElement, HTMLElement> {
+    assignedProjects: Project[];
+
+    constructor(private type: "active" | "finished") {
+        super("project-list", "app", false, `${type}-projects`); // Use super() to call constructor of the base class
+
+        this.assignedProjects = [];
+
+        this.configure();
+        this.renderContent(); // Call to render elements
+    }
+
+    // It is conventional to have 'public function' above 'private function'
+    configure() {
         projectState.addListener((projects: Project[]) => {
             // With this, project will assign values to only the relevant project status
             const relevantProjects = projects.filter((project) => {
@@ -164,9 +203,17 @@ class ProjectList {
             this.assignedProjects = relevantProjects;
             this.renderProjects();
         });
+    }
 
-        this.attach();
-        this.renderContent(); // Call to render elements
+    // Render element according to the input value
+    renderContent() {
+        // Create dynamic id for HTML element
+        const listId = `${this.type}-projects-list`;
+        // Search for the element that we need to work with. Then, assign the id
+        this.element.querySelector("ul")!.id = listId;
+        this.element.querySelector(
+            "h2"
+        )!.textContent = `${this.type.toUpperCase()} PROJECT`;
     }
 
     private renderProjects() {
@@ -180,52 +227,17 @@ class ProjectList {
             listElement.appendChild(listItem);
         }
     }
-
-    // Render element according to the input value
-    private renderContent() {
-        // Create dynamic id for HTML element
-        const listId = `${this.type}-projects-list`;
-        // Search for the element that we need to work with. Then, assign the id
-        this.element.querySelector("ul")!.id = listId;
-        this.element.querySelector(
-            "h2"
-        )!.textContent = `${this.type.toUpperCase()} PROJECT`;
-    }
-
-    private attach() {
-        this.hostElement.insertAdjacentElement("beforeend", this.element); // beforeend <-- means before the closing tag
-    }
 }
 
 /* ===== ProjectInput class ===== */
-class ProjectInput {
+class ProjectInput extends Component<HTMLDivElement, HTMLFormElement> {
     // We need to tell TS the types we will be using
-    templateElement: HTMLTemplateElement;
-    hostElement: HTMLDivElement;
-    element: HTMLFormElement;
     titleInputElement: HTMLInputElement;
     descriptionInputElement: HTMLInputElement;
     peopleInputElement: HTMLInputElement;
 
     constructor() {
-        // <HTMLTemplateElement> <-- type casting as the line below
-        // this.templateElement = <HTMLTemplateElement>document.getElementById("project-input")!;
-        // OR
-        // Can also declare type casting using 'as as HTMLTemplateElement' as the line below. The results will be the same
-        this.templateElement = document.getElementById(
-            "project-input"
-        )! as HTMLTemplateElement; // Using '!' declare that we sure this element is not null
-        this.hostElement = document.getElementById("app")! as HTMLDivElement;
-
-        const importedNode = document.importNode(
-            this.templateElement.content,
-            true
-        );
-
-        // Assign a velue to 'this.element' refer to the first element that happen to be <form> so we use 'HTMLFormElement'
-        this.element = importedNode.firstElementChild as HTMLFormElement;
-        // Assign id to HTML element. In this case, it will appear in empty <div>
-        this.element.id = "user-input";
+        super("project-input", "app", true, "user-input");
         // Assign a value to 'this.elementInputElement' using this.element.querySelector("#elementId") as HTMLInputElement;
         this.titleInputElement = this.element.querySelector(
             "#title"
@@ -238,10 +250,14 @@ class ProjectInput {
         ) as HTMLInputElement;
 
         this.configure();
-
-        // call this.attach() to attach the element that we are working into the host element
-        this.attach();
     }
+    // It is conventional to have 'public function' above 'private function'
+    // Binding
+    configure() {
+        this.element.addEventListener("submit", this.submitHandler);
+    }
+
+    renderContent(): void {}
 
     // Canceptually, this function is used to reach out all user inputs
     // : [string, string, number] <-- this type called tuple. Tuple requires exact type
@@ -300,17 +316,6 @@ class ProjectInput {
             // clear input fields
             this.clearInput();
         }
-    }
-
-    // Binding
-    private configure() {
-        this.element.addEventListener("submit", this.submitHandler);
-    }
-
-    // Create a function that will work as a host to host the element
-    // In HTML, this is an empty <div>
-    private attach() {
-        this.hostElement.insertAdjacentElement("afterbegin", this.element);
     }
 }
 
