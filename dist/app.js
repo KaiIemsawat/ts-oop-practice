@@ -105,20 +105,40 @@ class Component {
     }
 }
 class ProjectItem extends Component {
+    get persons() {
+        if (this.project.people === 1) {
+            return "1 Person";
+        }
+        else {
+            return `${this.project.people} Persons`;
+        }
+    }
     constructor(hostId, project) {
         super("single-project", hostId, false, project.id);
         this.project = project;
         this.configure();
         this.renderContent();
     }
-    configure() { }
+    dragStartHandler(event) {
+        console.log(event);
+    }
+    dragEndHandler(_) {
+        console.log("Drag End");
+    }
+    configure() {
+        this.element.addEventListener("dragstart", this.dragStartHandler);
+        this.element.addEventListener("dragend", this.dragEndHandler);
+    }
     renderContent() {
         this.element.querySelector("h2").textContent = this.project.title;
         this.element.querySelector("h3").textContent =
-            this.project.people.toString();
+            this.persons + " assigned.";
         this.element.querySelector("p").textContent = this.project.description;
     }
 }
+__decorate([
+    autobind
+], ProjectItem.prototype, "dragStartHandler", null);
 class ProjectList extends Component {
     constructor(type) {
         super("project-list", "app", false, `${type}-projects`);
