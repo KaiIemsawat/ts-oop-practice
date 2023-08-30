@@ -63,6 +63,22 @@ class ProjectState extends State<Project> {
             ProjectStatus.Active
         );
         this.projects.push(newProject);
+        this.updateListeners();
+    }
+
+    // The concept of this function is to switch status of the project
+    moveProject(projectId: string, newStatus: ProjectStatus) {
+        const project = this.projects.find(
+            (project) => project.id === projectId
+        );
+        if (project && project.status !== newStatus) {
+            project.status = newStatus;
+            this.updateListeners();
+        }
+    }
+
+    // Later, we can call this function in addProject() or moveProject() if we did change something
+    private updateListeners() {
         for (const listenerFn of this.listeners) {
             listenerFn(this.projects.slice());
         }
@@ -278,8 +294,15 @@ class ProjectList
         }
     }
 
+    @autobind
     dropHandler(event: DragEvent) {
-        console.log(event.dataTransfer?.getData("text/plain"));
+        const projectId = event.dataTransfer!.getData("text/plain");
+        projectState.moveProject(
+            projectId,
+            this.type === "active"
+                ? ProjectStatus.Active
+                : ProjectStatus.Finished
+        );
     }
 
     @autobind
