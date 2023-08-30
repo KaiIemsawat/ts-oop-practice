@@ -224,7 +224,9 @@ class ProjectItem
     @autobind
     // Came from Draggable interface
     dragStartHandler(event: DragEvent) {
-        console.log(event);
+        // The DataTransfer object is used to hold the data that is being dragged during a drag and drop operation. It may hold one or more data items, each of one or more data types
+        event.dataTransfer!.setData("text/plain", this.project.id); // '?' may or may not have this value, '!' we sure that we have it
+        event.dataTransfer!.effectAllowed = "move";
     }
 
     // Came from Draggable interface
@@ -249,7 +251,10 @@ class ProjectItem
 }
 
 /* ===== ProjectList class ===== */
-class ProjectList extends Component<HTMLDivElement, HTMLElement> {
+class ProjectList
+    extends Component<HTMLDivElement, HTMLElement>
+    implements DragTarget
+{
     assignedProjects: Project[];
 
     constructor(private type: "active" | "finished") {
@@ -261,8 +266,34 @@ class ProjectList extends Component<HTMLDivElement, HTMLElement> {
         this.renderContent(); // Call to render elements
     }
 
+    @autobind
+    dragOverHandler(event: DragEvent) {
+        if (
+            event.dataTransfer &&
+            event.dataTransfer.types[0] === "text/plain"
+        ) {
+            event.preventDefault();
+            const listElement = this.element.querySelector("ul")!;
+            listElement.classList.add("droppable"); // Add class to HTML element. Create the color change effect in css once user start dragging
+        }
+    }
+
+    dropHandler(event: DragEvent) {
+        console.log(event.dataTransfer?.getData("text/plain"));
+    }
+
+    @autobind
+    dragLeaveHandler(_: DragEvent) {
+        const listElement = this.element.querySelector("ul")!;
+        listElement.classList.remove("droppable"); // Remove class to HTML element. Remove CSS color style once user move the element to somewhere else
+    }
+
     // It is conventional to have 'public function' above 'private function'
     configure() {
+        this.element.addEventListener("dragover", this.dragOverHandler);
+        this.element.addEventListener("dragleave", this.dragLeaveHandler);
+        this.element.addEventListener("drop", this.dropHandler);
+
         projectState.addListener((projects: Project[]) => {
             // With this, project will assign values to only the relevant project status
             const relevantProjects = projects.filter((project) => {
