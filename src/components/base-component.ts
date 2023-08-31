@@ -1,5 +1,9 @@
 /* ===== Component Base class ===== */
-export abstract class Component<T extends HTMLElement, U extends HTMLElement> {
+// In case of importing only one value in the file, we can use 'default' keyword
+export default abstract class Component<
+    T extends HTMLElement,
+    U extends HTMLElement
+> {
     // Create generic types
     // We need to tell TS the types we will be using
     templateElement: HTMLTemplateElement;

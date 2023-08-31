@@ -1,6 +1,8 @@
 import { Component } from "./base-component.js";
-import { Validatable, validate } from "../utils/validation.js";
-import { autobind } from "../decorators/autobind.js";
+// import { Validatable, validate } from "../utils/validation.js";
+import * as Validation from "../utils/validation.js"; // another way of import multiple values
+// import { autobind } from "../decorators/autobind.js";
+import { autobind as Autobind } from "../decorators/autobind.js"; // Also work on single value the need to change name (changed name onle effects this file)
 import { projectState } from "../state/project-state.js";
 
 /* ===== ProjectInput class ===== */
@@ -40,17 +42,17 @@ export class ProjectInput extends Component<HTMLDivElement, HTMLFormElement> {
         const enteredDescription = this.descriptionInputElement.value;
         const enteredPeople = this.peopleInputElement.value;
 
-        const titleValidatable: Validatable = {
+        const titleValidatable: Validation.Validatable = {
             value: enteredTitle,
             required: true,
             // minLength: 3,
         };
-        const descriptionValidatable: Validatable = {
+        const descriptionValidatable: Validation.Validatable = {
             value: enteredDescription,
             required: true,
             minLength: 5,
         };
-        const peopleValidatable: Validatable = {
+        const peopleValidatable: Validation.Validatable = {
             // adding '+' will convert the value to number
             value: +enteredPeople,
             required: true,
@@ -61,9 +63,9 @@ export class ProjectInput extends Component<HTMLDivElement, HTMLFormElement> {
         // Validating
         if (
             // If any of these show false, it's invalid and alert will show
-            !validate(titleValidatable) ||
-            !validate(descriptionValidatable) ||
-            !validate(peopleValidatable)
+            !Validation.validate(titleValidatable) ||
+            !Validation.validate(descriptionValidatable) ||
+            !Validation.validate(peopleValidatable)
         ) {
             alert("Invalid input, please give it another try");
             return;
@@ -79,7 +81,7 @@ export class ProjectInput extends Component<HTMLDivElement, HTMLFormElement> {
         this.peopleInputElement.value = "";
     }
 
-    @autobind
+    @Autobind
     private submitHandler(event: Event) {
         event.preventDefault();
         const userInput = this.getherUserInput();
