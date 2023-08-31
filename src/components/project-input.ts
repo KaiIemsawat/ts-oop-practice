@@ -1,4 +1,4 @@
-import { Component } from "./base-component.js";
+import Cmp from "./base-component.js"; // incase that the original file use 'export default', we may name anything
 // import { Validatable, validate } from "../utils/validation.js";
 import * as Validation from "../utils/validation.js"; // another way of import multiple values
 // import { autobind } from "../decorators/autobind.js";
@@ -6,7 +6,7 @@ import { autobind as Autobind } from "../decorators/autobind.js"; // Also work o
 import { projectState } from "../state/project-state.js";
 
 /* ===== ProjectInput class ===== */
-export class ProjectInput extends Component<HTMLDivElement, HTMLFormElement> {
+export class ProjectInput extends Cmp<HTMLDivElement, HTMLFormElement> {
     // We need to tell TS the types we will be using
     titleInputElement: HTMLInputElement;
     descriptionInputElement: HTMLInputElement;
