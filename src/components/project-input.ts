@@ -1,9 +1,9 @@
-import Cmp from "./base-component.js"; // incase that the original file use 'export default', we may name anything
-// import { Validatable, validate } from "../utils/validation.js";
-import * as Validation from "../utils/validation.js"; // another way of import multiple values
-// import { autobind } from "../decorators/autobind.js";
-import { autobind as Autobind } from "../decorators/autobind.js"; // Also work on single value the need to change name (changed name onle effects this file)
-import { projectState } from "../state/project-state.js";
+import Cmp from "./base-component"; // incase that the original file use 'export default', we may name anything
+// import { Validatable, validate } from "../utils/validation";
+import * as Validation from "../utils/validation"; // another way of import multiple values
+// import { autobind } from "../decorators/autobind";
+import { autobind as Autobind } from "../decorators/autobind"; // Also work on single value the need to change name (changed name onle effects this file)
+import { projectState } from "../state/project-state";
 
 /* ===== ProjectInput class ===== */
 export class ProjectInput extends Cmp<HTMLDivElement, HTMLFormElement> {

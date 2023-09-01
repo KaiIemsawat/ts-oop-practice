@@ -8,3 +8,6 @@ In this part, I am focusing on sharpen my TS skills along with using OOP concept
 ### `"tsc -w"`,
 
 `tsc -w` is strongly recommended to run on separate terminal (same directory) to keep the app compiling each time the code is save
+
+more info about webpack
+https://webpack.js.org/guides/output-management/#cleaning-up-the-dist-folder
