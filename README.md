@@ -3,7 +3,7 @@ In this part, I am focusing on sharpen my TS skills along with using OOP concept
 
 ### `"npm start"`,
 
-`npm start` can be use to start the project and see in local at [http://localhost:3000](http://localhost:3000)
+`npm start` can be use to start the project and see in local at [http://localhost:8080](http://localhost:8080)
 
 ### `"tsc -w"`,
 
